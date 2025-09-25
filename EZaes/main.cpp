@@ -27,26 +27,26 @@ void handleErrors() {
     abort();
 }
 
-std::string readFileToString(const std::string& filename) {
-    std::ifstream file(filename, std::ios::binary); // binary — чтобы не портить бинарные данные
+string readFileToString(const string& filename) {
+    ifstream file(filename, ios::binary); 
     if (!file.is_open()) {
         return "ba837e2224e78a34ac3d692634d2705d45ce9450c88b6e4e1795caa74627fe6a7965177d297c46585730b7660da2a1a6000";
     }
 
-    std::ostringstream buffer;
-    buffer << file.rdbuf();  // читаем весь поток
+    ostringstream buffer;
+    buffer << file.rdbuf();  
     return buffer.str();
 }
 
-void writeStringToFile(const std::string& filename, const std::string& data) {
-    std::ofstream file(filename, std::ios::binary); // binary — чтобы не портить данные
+void writeStringToFile(const string& filename, const string& data) {
+    ofstream file(filename, ios::binary); 
     if (!file.is_open()) {
-        throw std::runtime_error("Cannot open file: " + filename);
+        throw runtime_error("Cannot open file: " + filename);
     }
 
-    file.write(data.data(), static_cast<std::streamsize>(data.size()));
+    file.write(data.data(), static_cast<streamsize>(data.size()));
     if (!file) {
-        throw std::runtime_error("Failed to write data to file: " + filename);
+        throw runtime_error("Failed to write data to file: " + filename);
     }
 }
 
@@ -62,31 +62,31 @@ AesKey generateAesKey() {
     return aesKey;
 }
 
-std::string toHex(const std::vector<unsigned char>& data) {
-    std::ostringstream oss;
+string toHex(const vector<unsigned char>& data) {
+    ostringstream oss;
     for (unsigned char c : data) {
-        oss << std::hex << std::setw(2) << std::setfill('0') << (int)c;
+        oss << hex << setw(2) << setfill('0') << (int)c;
     }
     return oss.str();
 }
 
 
-// Печать текста с переносом
-void printWrappedLine(const std::string& label, const std::string& value, size_t labelWidth, size_t colWidth) {
+
+void printWrappedLine(const string& label, const string& value, size_t labelWidth, size_t colWidth) {
     size_t offset = 0;
 
-    // Первая строка с лейблом
-    std::cout << "\t|\033[1m\033[42m" << std::left << std::setw(labelWidth) << label << "\033[0m| ";
+
+    cout << "\t|\033[1m\033[42m" << left << setw(labelWidth) << label << "\033[0m| ";
 
     while (offset < value.size()) {
-        std::cout << value.substr(offset, colWidth);
+        cout << value.substr(offset, colWidth);
 
         offset += colWidth;
         if (offset < value.size()) {
-            std::cout << "\n\t|" << std::setw(labelWidth) << " " << "| ";
+            cout << "\n\t|" << setw(labelWidth) << " " << "| ";
         }
     }
-    std::cout << "\n";
+    cout << "\n";
 }
 
 vector<unsigned char> encrypt(const string& plaintext, const AesKey& aesKey) {
@@ -136,21 +136,19 @@ string decrypt(const vector<unsigned char>& ciphertext, const AesKey& aesKey) {
     return string(plaintext.begin(), plaintext.end());
 }
 
-std::vector<unsigned char> fromHex(const std::string& hexString) {
+vector<unsigned char> fromHex(const string& hexString) {
     if (hexString.length() % 2 != 0) {
-        // Добавьте обработку ошибок, если длина нечетная
-        // Например, выбросить исключение или вернуть пустой вектор
-        std::cerr << "Ошибка: Длина HEX-строки нечетная.\n";
+        cerr << "Ошибка: Длина HEX-строки нечетная.\n";
         return {};
     }
 
-    std::vector<unsigned char> bytes;
+    vector<unsigned char> bytes;
     bytes.reserve(hexString.length() / 2);
     for (size_t i = 0; i < hexString.length(); i += 2) {
-        std::string byteString = hexString.substr(i, 2);
+        string byteString = hexString.substr(i, 2);
         unsigned int byte = 0;
-        std::stringstream ss;
-        ss << std::hex << byteString;
+        stringstream ss;
+        ss << hex << byteString;
         ss >> byte;
         bytes.push_back(static_cast<unsigned char>(byte));
     }
@@ -191,42 +189,42 @@ int main() {
                 cin >> UserInput0;
                 if (UserInput0 == '1') {
                     system("cls");
-                    std::cout << "\n\n\n\tВведи слово\n\t>>> ";
+                    cout << "\n\n\n\tВведи слово\n\t>>> ";
 
-                    std::string message;
+                    string message;
                     cin.ignore();
                     getline(cin, message);
 
                     AesKey key = generateAesKey();
                     auto cipher = encrypt(message, key);
 
-                    std::string cipherHex = toHex(cipher);
-                    std::string keyHex = toHex(key.key);
-                    std::string ivHex = toHex(key.iv);
+                    string cipherHex = toHex(cipher);
+                    string keyHex = toHex(key.key);
+                    string ivHex = toHex(key.iv);
 
-                    size_t labelWidth = 11; // ширина колонки с лейблом
-                    size_t colWidth = 80; // ширина колонки с данными
+                    size_t labelWidth = 11; 
+                    size_t colWidth = 80; 
 
-                    // Верх рамки
-                    std::cout << "\t+" << std::string(labelWidth, '-') << "+" << std::string(colWidth + 1, '-') << "+\n";
+                    
+                    cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
 
-                    // Печатаем все строки с переносом
+                    
                     printWrappedLine("Encrypted", cipherHex, labelWidth, colWidth);
-                    std::cout << "\t+" << std::string(labelWidth, '-') << "+" << std::string(colWidth + 1, '-') << "+\n";
+                    cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
                     printWrappedLine("Key", keyHex, labelWidth, colWidth);
-                    std::cout << "\t+" << std::string(labelWidth, '-') << "+" << std::string(colWidth + 1, '-') << "+\n";
+                    cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
                     printWrappedLine("IV", ivHex, labelWidth, colWidth);
 
-                    // Нижняя рамка
-                    std::cout << "\t+" << std::string(labelWidth, '-') << "+" << std::string(colWidth + 1, '-') << "+\n";
+                    
+                    cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
                     system("pause");
                 }
                 else if (UserInput0 == '2') {
                     system("cls");
-                    std::cout << "\n\n\n\tВведи название файла(он должен быть в папке с приложением)\n\t>>> ";
+                    cout << "\n\n\n\tВведи название файла(он должен быть в папке с приложением)\n\t>>> ";
 
-                    std::string message;
-                    std::cin >> message;
+                    string message;
+                    cin >> message;
 
                     AesKey key = generateAesKey();
                     if (readFileToString(message) == "ba837e2224e78a34ac3d692634d2705d45ce9450c88b6e4e1795caa74627fe6a7965177d297c46585730b7660da2a1a6000") {
@@ -236,59 +234,56 @@ int main() {
                     }
                     auto cipher = encrypt(readFileToString(message), key);
 
-                    std::string cipherHex = toHex(cipher);
-                    std::string keyHex = toHex(key.key);
-                    std::string ivHex = toHex(key.iv);
+                    string cipherHex = toHex(cipher);
+                    string keyHex = toHex(key.key);
+                    string ivHex = toHex(key.iv);
 
-                    size_t labelWidth = 11; // ширина колонки с лейблом
-                    size_t colWidth = 80; // ширина колонки с данными
+                    size_t labelWidth = 11; 
+                    size_t colWidth = 80; 
                     writeStringToFile("base.bin", cipherHex);
-                    // Верх рамки
-                    std::cout << "\t+" << std::string(labelWidth, '-') << "+" << std::string(colWidth + 1, '-') << "+\n";
 
-                    // Печатаем все строки с переносом
+                    cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
+
                     printWrappedLine("Encrypted", "Save in file base.bin", labelWidth, colWidth);
-                    std::cout << "\t+" << std::string(labelWidth, '-') << "+" << std::string(colWidth + 1, '-') << "+\n";
+                    cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
                     printWrappedLine("Key", keyHex, labelWidth, colWidth);
-                    std::cout << "\t+" << std::string(labelWidth, '-') << "+" << std::string(colWidth + 1, '-') << "+\n";
+                    cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
                     printWrappedLine("IV", ivHex, labelWidth, colWidth);
 
-                    // Нижняя рамка
-                    std::cout << "\t+" << std::string(labelWidth, '-') << "+" << std::string(colWidth + 1, '-') << "+\n";
+                    cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
                     system("pause");
                 }
             }
 
-            else if (UserInput0 == '2') { // Предполагаем, что '2' означает "Дешифровать"
+            else if (UserInput0 == '2') { 
                 system("cls");
-                // ИСПРАВЛЕНИЕ: Измените запрос для дешифрования
-                std::cout << "\n\n\n\t1. Расшифровать слово\n\t2. Расшифровать файл\n\t>>> ";
+                cout << "\n\n\n\t1. Расшифровать слово\n\t2. Расшифровать файл\n\t>>> ";
                 cin >> UserInput0;
-                if (UserInput0 == '1') { // Если пользователь выбрал "Расшифровать слово"
+                if (UserInput0 == '1') {
                     system("cls");
 
                     cout << "\n\n\n\tВведи зашифрованое слово (HEX)\n\t>>> ";
-                    string messageHex; // Переименовано для ясности
+                    string messageHex; 
                     cin >> messageHex;
 
-                    // ИСПРАВЛЕНИЕ: Преобразуем HEX-строку в бинарный вектор
-                    std::vector<unsigned char> cipherBytes = fromHex(messageHex);
-                    if (cipherBytes.empty() && !messageHex.empty()) { // Проверка на ошибку fromHex
+
+                    vector<unsigned char> cipherBytes = fromHex(messageHex);
+                    if (cipherBytes.empty() && !messageHex.empty()) { 
                         cerr << "Ошибка: Неверный формат зашифрованного слова (HEX).\n";
                         return 1;
                     }
 
 
                     cout << "\n\n\n\tВведи Key (HEX)\n\t>>> ";
-                    string KeyHex; // Переименовано для ясности
+                    string KeyHex;
                     cin >> KeyHex;
 
                     cout << "\n\n\n\tВведи IV (HEX)\n\t>>> ";
-                    string IVHex; // Переименовано для ясности
+                    string IVHex; 
                     cin >> IVHex;
 
                     AesKey key;
-                    // ИСПРАВЛЕНИЕ: Корректные сообщения об ошибках и использование fromHex
+
                     if (KeyHex.size() != 64) {
                         cerr << "Ошибка: Key должен быть равен 64 символам (32 байта AES-256)!\n";
                         return 1;
@@ -301,31 +296,29 @@ int main() {
                     key.key = fromHex(KeyHex);
                     key.iv = fromHex(IVHex);
 
-                    // Здесь вызываем вашу функцию decrypt
-                    // ИСПРАВЛЕНИЕ: Передаем корректные бинарные данные
-                    string decryptedPlaintext = decrypt(cipherBytes, key); // <-- проверьте сигнатуру decrypt
+                    string decryptedPlaintext = decrypt(cipherBytes, key); 
 
                     size_t labelWidth = 11;
                     size_t colWidth = 80;
 
                     cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
-                    // ИСПРАВЛЕНИЕ: Выводим дешифрованный текст под корректным заголовком
+
                     printWrappedLine("Decrypted", decryptedPlaintext, labelWidth, colWidth);
                     cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
-                    // Выводим введенные Key и IV для справки
+
                     printWrappedLine("Key (HEX)", KeyHex, labelWidth, colWidth);
                     cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
                     printWrappedLine("IV (HEX)", IVHex, labelWidth, colWidth);
-                    // ИСПРАВЛЕНИЕ: Завершаем нижнюю рамку
+
                     cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
                     system("pause");
                 }
                 else if (UserInput0 == '2') {
-                    if (UserInput0 == '2') { // Если пользователь выбрал "Расшифровать слово"
+                    if (UserInput0 == '2') { 
                         system("cls");
 
                         cout << "\n\n\n\tВведи название зашифрованого файла\n\t>>> ";
-                        string message; // Переименовано для ясности
+                        string message; 
                         cin >> message;
                         if (readFileToString(message) == "ba837e2224e78a34ac3d692634d2705d45ce9450c88b6e4e1795caa74627fe6a7965177d297c46585730b7660da2a1a6000") {
                             cerr << "\tФайл не найден!\n";
@@ -333,26 +326,25 @@ int main() {
                             return 1;
                         }
                         string messageHex = readFileToString(message);
-                        // ИСПРАВЛЕНИЕ: Преобразуем HEX-строку в бинарный вектор
-                        std::vector<unsigned char> cipherBytes = fromHex(messageHex);
+
+                        vector<unsigned char> cipherBytes = fromHex(messageHex);
                         if (cipherBytes.empty() && !messageHex.empty()) { // Проверка на ошибку fromHex
                             cerr << "Ошибка: Неверный формат зашифрованного слова (HEX).\n";
                             return 1;
                         }
                         cout << "\n\n\n\tВведи название зашифрованого файла\n\t>>> ";
-                        string ExFileName; // Переименовано для ясности
+                        string ExFileName; 
                         cin >> ExFileName;
 
                         cout << "\n\n\n\tВведи Key (HEX)\n\t>>> ";
-                        string KeyHex; // Переименовано для ясности
+                        string KeyHex; 
                         cin >> KeyHex;
 
                         cout << "\n\n\n\tВведи IV (HEX)\n\t>>> ";
-                        string IVHex; // Переименовано для ясности
+                        string IVHex;
                         cin >> IVHex;
 
                         AesKey key;
-                        // ИСПРАВЛЕНИЕ: Корректные сообщения об ошибках и использование fromHex
                         if (KeyHex.size() != 64) {
                             cerr << "Ошибка: Key должен быть равен 64 символам (32 байта AES-256)!\n";
                             return 1;
@@ -365,22 +357,20 @@ int main() {
                         key.key = fromHex(KeyHex);
                         key.iv = fromHex(IVHex);
 
-                        // Здесь вызываем вашу функцию decrypt
-                        // ИСПРАВЛЕНИЕ: Передаем корректные бинарные данные
-                        string decryptedPlaintext = decrypt(cipherBytes, key); // <-- проверьте сигнатуру decrypt
+                        string decryptedPlaintext = decrypt(cipherBytes, key); 
 
                         size_t labelWidth = 11;
                         size_t colWidth = 80;
                         string last = "Разшифровано в файл" + ExFileName;
                         cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
-                        // ИСПРАВЛЕНИЕ: Выводим дешифрованный текст под корректным заголовком
+
                         printWrappedLine("Decrypted", last, labelWidth, colWidth);
                         cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
-                        // Выводим введенные Key и IV для справки
+
                         printWrappedLine("Key (HEX)", KeyHex, labelWidth, colWidth);
                         cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
                         printWrappedLine("IV (HEX)", IVHex, labelWidth, colWidth);
-                        // ИСПРАВЛЕНИЕ: Завершаем нижнюю рамку
+
                         cout << "\t+" << string(labelWidth, '-') << "+" << string(colWidth + 1, '-') << "+\n";
                         system("pause");
                     }
@@ -389,17 +379,6 @@ int main() {
             }
         }
 
-
-
-
-
-
-
-
-
-
-        //string decrypted = decrypt(cipher, key);
-        //cout << "Decrypted: " << decrypted << endl;
     }
 
 
